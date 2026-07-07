@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An interactive comparison dashboard explaining the differences between JPA (Specification), Hibernate (Implementation), and Spring Data JPA (Abstraction) in Java.">
+    <title>JPA vs Hibernate vs Spring Data JPA | Hands-On Demonstration</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Background glowing orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="badge-tag">HANDS ON 4</span>
+                <h1>JPA, Hibernate & Spring Data JPA</h1>
+                <p class="subtitle">Understand the layers of Java Persistence: specifications, implementations, and boilerplate-reducing abstractions.</p>
+            </div>
+        </header>
+
+        <!-- Conceptual Cards -->
+        <section class="conceptual-grid" aria-label="Conceptual Architecture Info">
+            <div class="card concept-card jpa-card">
+                <div class="card-glow"></div>
+                <div class="card-icon">📜</div>
+                <h2>JPA</h2>
+                <div class="concept-subtitle">Specification (JSR 338)</div>
+                <p>Java Persistence API is a <strong>specification</strong>. It defines the guidelines, annotations (like <code>@Entity</code>), and interfaces (like <code>EntityManager</code>) for object-relational mapping without containing any concrete database logic.</p>
+                <ul>
+                    <li>No concrete implementation</li>
+                    <li>Defines metadata standards</li>
+                    <li>Ensures database layer portability</li>
+                </ul>
+            </div>
+
+            <div class="card concept-card hibernate-card">
+                <div class="card-glow"></div>
+                <div class="card-icon">⚙️</div>
+                <h2>Hibernate</h2>
+                <div class="concept-subtitle">JPA ORM Implementation</div>
+                <p>A concrete <strong>Object-Relational Mapping (ORM)</strong> engine that implements JPA. It translates Java object manipulations into SQL queries and handles database connections, transactions, and caching.</p>
+                <ul>
+                    <li>Direct JPA specification provider</li>
+                    <li>Performs actual SQL execution</li>
+                    <li>Requires manual Session &amp; Tx handling in raw code</li>
+                </ul>
+            </div>
+
+            <div class="card concept-card spring-card">
+                <div class="card-glow"></div>
+                <div class="card-icon">🍃</div>
+                <h2>Spring Data JPA</h2>
+                <div class="concept-subtitle">Developer Abstraction</div>
+                <p>An **abstraction layer** built on top of JPA providers (Hibernate). It eliminates database boilerplate by generating repository implementations at runtime and managing transaction boundaries declaratively.</p>
+                <ul>
+                    <li>Zero-boilerplate JpaRepository interface</li>
+                    <li>Declarative transactions (<code>@Transactional</code>)</li>
+                    <li>Translates calls to Hibernate under the hood</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Interactive Playground -->
+        <main class="playground-section">
+            <h2 class="section-title">Interactive Sandbox</h2>
+            
+            <div class="playground-grid">
+                <!-- Sandbox Left: Form -->
+                <div class="card input-card">
+                    <h3>Add Employee Entity</h3>
+                    <p class="card-desc">Fill in details and choose how to persist the employee to see the execution differences.</p>
+                    
+                    <form id="employeeForm" class="employee-form" onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="empName">Employee Name</label>
+                            <input type="text" id="empName" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="empEmail">Email Address</label>
+                            <input type="email" id="empEmail" placeholder="john.doe@company.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="empDept">Department</label>
+                            <input type="text" id="empDept" placeholder="e.g. Engineering" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="empSalary">Annual Salary ($)</label>
+                            <input type="number" id="empSalary" placeholder="e.g. 85000" min="0" required>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button type="button" id="btnHibernate" class="btn btn-hibernate" onclick="saveEmployee('hibernate')">
+                                <span class="btn-text">Save via Hibernate</span>
+                                <span class="btn-subtext">Manual session &amp; tx</span>
+                            </button>
+                            <button type="button" id="btnSpringData" class="btn btn-spring" onclick="saveEmployee('spring-data')">
+                                <span class="btn-text">Save via Spring Data JPA</span>
+                                <span class="btn-subtext">Repository &amp; @Transactional</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sandbox Right: Pipeline Simulator -->
+                <div class="card pipeline-card">
+                    <h3>Pipeline Visualizer</h3>
+                    <p class="card-desc">Watch how each technology processes your persistence request.</p>
+                    
+                    <div class="pipeline-container">
+                        <!-- Pipeline Steps -->
+                        <div class="pipeline-step" id="step-client">
+                            <div class="step-icon">💻</div>
+                            <div class="step-info">
+                                <div class="step-name">Client HTTP POST</div>
+                                <div class="step-detail">Send JSON payload</div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-arrow" id="arrow-1">▼</div>
+
+                        <div class="pipeline-step" id="step-controller">
+                            <div class="step-icon">🎮</div>
+                            <div class="step-info">
+                                <div class="step-name">Spring REST Controller</div>
+                                <div class="step-detail">Intercept JSON &amp; Map to Object</div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-arrow" id="arrow-2">▼</div>
+
+                        <!-- Special wrapper for interceptor -->
+                        <div class="proxy-wrapper" id="proxy-wrapper">
+                            <div class="proxy-badge">Spring AOP Transaction Interceptor</div>
+                            
+                            <div class="pipeline-step" id="step-service">
+                                <div class="step-icon">⚙️</div>
+                                <div class="step-info">
+                                    <div class="step-name" id="service-name">Employee Service</div>
+                                    <div class="step-detail" id="service-detail">Select method...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-arrow" id="arrow-3">▼</div>
+
+                        <div class="pipeline-step" id="step-orm">
+                            <div class="step-icon">⚡</div>
+                            <div class="step-info">
+                                <div class="step-name" id="orm-name">Hibernate Engine (JPA)</div>
+                                <div class="step-detail" id="orm-detail">Translates Object to SQL</div>
+                            </div>
+                        </div>
+
+                        <div class="pipeline-arrow" id="arrow-4">▼</div>
+
+                        <div class="pipeline-step" id="step-db">
+                            <div class="step-icon">💾</div>
+                            <div class="step-info">
+                                <div class="step-name">H2 In-Memory DB</div>
+                                <div class="step-detail">Persist records</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code & Logs Terminal Panel -->
+            <div class="terminal-panel card">
+                <div class="terminal-header">
+                    <div class="terminal-controls">
+                        <span class="control red"></span>
+                        <span class="control yellow"></span>
+                        <span class="control green"></span>
+                    </div>
+                    <div class="terminal-title">Execution Inspector</div>
+                    <div class="terminal-tab" id="active-tab-indicator">Ready</div>
+                </div>
+                <div class="terminal-body">
+                    <!-- Left: Code Snippet -->
+                    <div class="terminal-code">
+                        <h4>Executed Java Code</h4>
+                        <pre><code id="code-display">// Select a method above to run and inspect execution...</code></pre>
+                    </div>
+                    <!-- Right: Execution Logs & SQL -->
+                    <div class="terminal-logs">
+                        <h4>Console Step Log &amp; SQL Query</h4>
+                        <div class="log-output" id="log-output">
+                            <div class="log-line system-msg">Interactive console active. Select an action on the left to begin...</div>
+                        </div>
+                        <div class="sql-box" id="sql-box">
+                            <span class="sql-label">SQL Query Executed:</span>
+                            <code id="sql-output" class="sql-text">-- Awaiting persistence action...</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Database State Section -->
+        <section class="database-section card">
+            <div class="db-header">
+                <div>
+                    <h2>Live H2 Database State</h2>
+                    <p class="card-desc">Query results from the <code>employees</code> table in real time.</p>
+                </div>
+                <button type="button" class="btn-clear" onclick="clearDatabase()">Clear DB Records</button>
+            </div>
+            
+            <div class="table-container">
+                <table id="employeesTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Salary</th>
+                            <th>Created Via</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesBody">
+                        <tr>
+                            <td colspan="6" class="empty-state">No employee records in H2 database memory. Add employees using the buttons above.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Comparative Matrix -->
+        <section class="matrix-section card">
+            <h2>Detailed Comparison Matrix</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>JPA (Specification)</th>
+                            <th>Hibernate (JPA Provider)</th>
+                            <th>Spring Data JPA (Abstraction)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Nature</strong></td>
+                            <td>Official Java EE standard specification for ORM.</td>
+                            <td>Concrete implementation of JPA specification.</td>
+                            <td>An abstraction layer on top of a JPA provider.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Boilerplate Code</strong></td>
+                            <td>High. (Requires writing resource setup, transactions).</td>
+                            <td>High. (Requires manual Sessions, Transactions, Try-Catch).</td>
+                            <td>Extremely Low. (Provides out-of-the-box standard CRUD methods).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Transaction Control</strong></td>
+                            <td>Standard API definitions (e.g., EntityTransaction).</td>
+                            <td>Manual programmatic control (e.g., <code>session.beginTransaction()</code>, <code>commit()</code>).</td>
+                            <td>Declarative transaction control via <code>@Transactional</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Query Mechanism</strong></td>
+                            <td>JPQL (Java Persistence Query Language).</td>
+                            <td>HQL (Hibernate Query Language) &amp; Criteria API.</td>
+                            <td>Query methods (e.g., <code>findByEmail</code>) &amp; <code>@Query</code> annotations.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Session Management</strong></td>
+                            <td>Defines <code>EntityManager</code> lifecycle.</td>
+                            <td>Manual opening, flushing, and closing of <code>Session</code>.</td>
+                            <td>Automatic <code>EntityManager</code> and session lifecycle handling.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>JPA (Specification) &lt;&mdash; implemented by &mdash;&gt; Hibernate &lt;&mdash; abstracted by &mdash;&gt; Spring Data JPA</p>
+            <p class="copyright">&copy; 2026 Developer sandbox. Built with Spring Boot, H2, and Vanilla HTML/CSS/JS.</p>
+        </footer>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
