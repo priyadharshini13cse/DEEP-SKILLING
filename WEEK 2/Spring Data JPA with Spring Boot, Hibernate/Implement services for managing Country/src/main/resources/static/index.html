@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A premium Country Management Dashboard built using Spring Data JPA, Hibernate, and Spring Boot.">
+    <title>Global Country Directory | Management System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Ambient glowing background elements -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="container">
+        <!-- Dashboard Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <span class="badge-tag">SPRING DATA JPA + HIBERNATE</span>
+                <h1>Global Country Directory</h1>
+                <p class="subtitle">Perform high-performance CRUD operations with schema-validated persistence layers.</p>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot online"></span>
+                <span>System Connected (H2-Validated)</span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            
+            <!-- Left Panel: Controls & Input Forms -->
+            <aside class="control-panel">
+                
+                <!-- Quick Search & Actions -->
+                <div class="card panel-card search-card">
+                    <div class="card-glow"></div>
+                    <h2>🔎 Find & Query Countries</h2>
+                    <p class="card-desc">Search by partial name or look up a specific country code.</p>
+                    
+                    <div class="search-tabs">
+                        <button class="tab-btn active" onclick="switchSearchTab('partial')">Partial Search</button>
+                        <button class="tab-btn" onclick="switchSearchTab('exact')">Code Lookup</button>
+                    </div>
+
+                    <!-- Partial Search Form -->
+                    <div id="partialSearchGroup" class="search-group active">
+                        <div class="form-group">
+                            <label for="searchName">Country Name (Partial)</label>
+                            <div class="input-with-button">
+                                <input type="text" id="searchName" placeholder="e.g. Unit, India, Island..." oninput="handleSearch()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Code Lookup Form -->
+                    <div id="exactSearchGroup" class="search-group">
+                        <div class="form-group">
+                            <label for="searchCode">Exact Country Code (2 letters)</label>
+                            <div class="input-with-button">
+                                <input type="text" id="searchCode" placeholder="e.g. IN, US, GB" maxlength="10">
+                                <button type="button" class="btn btn-primary" onclick="lookupByCode()">Lookup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Country Card -->
+                <div class="card panel-card form-card">
+                    <div class="card-glow"></div>
+                    <h2>➕ Register New Country</h2>
+                    <p class="card-desc">Add a new country record to the validated schema.</p>
+                    
+                    <form id="addCountryForm" onsubmit="return handleAddCountry(event)">
+                        <div class="form-row">
+                            <div class="form-group col-4">
+                                <label for="newCode">Country Code</label>
+                                <input type="text" id="newCode" placeholder="e.g. MX" required maxlength="10" style="text-transform: uppercase;">
+                            </div>
+                            <div class="form-group col-8">
+                                <label for="newName">Country Name</label>
+                                <input type="text" id="newName" placeholder="e.g. Mexico" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Add Country</button>
+                    </form>
+                </div>
+
+                <!-- Update Country Card -->
+                <div class="card panel-card form-card">
+                    <div class="card-glow"></div>
+                    <h2>✏️ Edit Country Details</h2>
+                    <p class="card-desc">Update the name of an existing country in the database.</p>
+                    
+                    <form id="updateCountryForm" onsubmit="return handleUpdateCountry(event)">
+                        <div class="form-row">
+                            <div class="form-group col-4">
+                                <label for="updateCode">Country Code</label>
+                                <input type="text" id="updateCode" placeholder="e.g. FR" required maxlength="10" style="text-transform: uppercase;" onchange="fetchCountryForUpdate()">
+                            </div>
+                            <div class="form-group col-8">
+                                <label for="updateName">New Country Name</label>
+                                <input type="text" id="updateName" placeholder="e.g. France Republic" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-block">Update Country</button>
+                    </form>
+                </div>
+
+            </aside>
+
+            <!-- Right Panel: Data Table & Feed -->
+            <main class="data-panel">
+                
+                <!-- Country Table Card -->
+                <div class="card table-card">
+                    <div class="card-glow"></div>
+                    <div class="table-header">
+                        <h2>🌍 Country Registry</h2>
+                        <div class="results-meta">
+                            Showing <span id="recordCount">0</span> countries
+                        </div>
+                    </div>
+                    
+                    <div class="table-scroll-container">
+                        <table class="country-table">
+                            <thead>
+                                <tr>
+                                    <th width="30%">Country Code</th>
+                                    <th width="50%">Country Name</th>
+                                    <th width="20%" style="text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="countryTableBody">
+                                <!-- Data populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Transaction Logs / Console -->
+                <div class="card console-card">
+                    <div class="card-glow"></div>
+                    <div class="console-header">
+                        <h2>💻 Database Action Log</h2>
+                        <button class="clear-btn" onclick="clearLogs()">Clear Logs</button>
+                    </div>
+                    <div class="console-output" id="consoleOutput">
+                        <span class="log-entry system-log">[System] H2 Database initialized with schema validation enabled.</span>
+                        <span class="log-entry system-log">[System] 240 default countries populated via 'data.sql'.</span>
+                    </div>
+                </div>
+
+            </main>
+
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <span id="toastMessage">Action performed successfully!</span>
+    </div>
+
+    <!-- Javascript -->
+    <script src="app.js"></script>
+</body>
+</html>
